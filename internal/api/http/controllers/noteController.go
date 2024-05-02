@@ -59,6 +59,18 @@ func (h *RouteImpl) Archived(c *gin.Context) {
 	c.JSON(http.StatusOK, helpers.Response(dto.ResponseParams{StatusCode: http.StatusOK, Message: "Note Has Been Archived", Data: note}))
 }
 
+func (h *RouteImpl) Show(c *gin.Context) {
+	slug := c.Param("slug")
+	
+	note, err := h.NoteService.FindBySlug(c, slug)
+	if err != nil {
+		exception.HandleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, helpers.Response(dto.ResponseParams{StatusCode: http.StatusOK, Message: "Success", Data: note}))
+}
+
 func (h *RouteImpl) Unarchived(c *gin.Context) {
 	slug := c.Param("slug")
 	

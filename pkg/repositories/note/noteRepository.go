@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"hey-notes-api/models"
+	"hey-notes-api/pkg/dto"
 )
 
 type NoteRepository interface {
-	GetAllNotes(ctx context.Context, db *sql.DB) (*[]models.Note, error)
-	GetArchivedNotes(ctx context.Context, db *sql.DB) (*[]models.Note, error)
+	GetAllNotes(ctx context.Context, db *sql.DB) (*[]dto.NoteResponse, error)
+	GetArchivedNotes(ctx context.Context, db *sql.DB) (*[]dto.NoteResponse, error)
 	FindBySlug(ctx context.Context, db *sql.DB, slug string) (*models.Note, error)
 	Create(ctx context.Context, tx *sql.Tx, note models.Note) (*models.Note, error)
 	Archived(ctx context.Context, db *sql.DB, slug string) (bool, error)
@@ -23,7 +24,7 @@ func NewNoteRepositoryImpl() NoteRepository {
 	return &NoteRepositoryImpl{}
 }
 
-func (repository *NoteRepositoryImpl) GetAllNotes(ctx context.Context, db *sql.DB) (*[]models.Note, error) {
+func (repository *NoteRepositoryImpl) GetAllNotes(ctx context.Context, db *sql.DB) (*[]dto.NoteResponse, error) {
 	SQL := "SELECT * FROM notes"
 	rows, err := db.QueryContext(ctx, SQL)
 	
@@ -33,7 +34,7 @@ func (repository *NoteRepositoryImpl) GetAllNotes(ctx context.Context, db *sql.D
 
 	defer rows.Close()
 
-	var notes []models.Note
+	var notes []dto.NoteResponse
 
 	for rows.Next() {
 		note := models.Note{}
@@ -43,13 +44,13 @@ func (repository *NoteRepositoryImpl) GetAllNotes(ctx context.Context, db *sql.D
 			return nil, err
 		}
 
-		notes = append(notes, note)
+		notes = append(notes, *dto.ToNoteResponse(&note))
 	}
 
 	return &notes, nil
 }
 
-func (repository *NoteRepositoryImpl) GetArchivedNotes(ctx context.Context, db *sql.DB) (*[]models.Note, error) {
+func (repository *NoteRepositoryImpl) GetArchivedNotes(ctx context.Context, db *sql.DB) (*[]dto.NoteResponse, error) {
 	SQL := "SELECT * FROM notes WHERE archived = ?"
 	rows, err := db.QueryContext(ctx, SQL, true)
 	
@@ -59,7 +60,7 @@ func (repository *NoteRepositoryImpl) GetArchivedNotes(ctx context.Context, db *
 
 	defer rows.Close()
 
-	var notes []models.Note
+	var notes []dto.NoteResponse
 
 	for rows.Next() {
 		note := models.Note{}
@@ -69,7 +70,7 @@ func (repository *NoteRepositoryImpl) GetArchivedNotes(ctx context.Context, db *
 			return nil, err
 		}
 
-		notes = append(notes, note)
+		notes = append(notes, *dto.ToNoteResponse(&note))
 	}
 
 	return &notes, nil

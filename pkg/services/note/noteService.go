@@ -3,7 +3,6 @@ package note
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	"hey-notes-api/database"
 	globalHelper "hey-notes-api/helpers"
@@ -16,9 +15,10 @@ import (
 )
 
 type NoteService interface {
-	GetAllNotes(ctx context.Context) (*[]models.Note, error)
-	GetArchivedNotes(ctx context.Context) (*[]models.Note, error)
-	Create(ctx context.Context, req *dto.NoteRequest) (*models.Note, error)
+	GetAllNotes(ctx context.Context) (*[]dto.NoteResponse, error)
+	GetArchivedNotes(ctx context.Context) (*[]dto.NoteResponse, error)
+	Create(ctx context.Context, req *dto.NoteRequest) (*dto.NoteResponse, error)
+	FindBySlug(ctx context.Context, slug string) (*dto.NoteResponse, error)
 	Archived(ctx context.Context, slug string) (bool, error)
 	Unarchived(ctx context.Context, slug string) (bool, error)
 	Delete(ctx context.Context, slug string) (bool, error)
@@ -42,7 +42,7 @@ func NewNoteServiceImpl(
 	}
 }
 
-func (service *NoteServiceImpl) GetAllNotes(ctx context.Context) (*[]models.Note, error) {
+func (service *NoteServiceImpl) GetAllNotes(ctx context.Context) (*[]dto.NoteResponse, error) {
 	notes, err := service.NoteRepo.GetAllNotes(ctx, service.DbImpl.DB)
 
 	if err != nil {
@@ -56,7 +56,7 @@ func (service *NoteServiceImpl) GetAllNotes(ctx context.Context) (*[]models.Note
 	return notes, nil
 }
 
-func (service *NoteServiceImpl) GetArchivedNotes(ctx context.Context) (*[]models.Note, error) {
+func (service *NoteServiceImpl) GetArchivedNotes(ctx context.Context) (*[]dto.NoteResponse, error) {
 	notes, err := service.NoteRepo.GetArchivedNotes(ctx, service.DbImpl.DB)
 
 	if err != nil {
@@ -70,7 +70,7 @@ func (service *NoteServiceImpl) GetArchivedNotes(ctx context.Context) (*[]models
 	return notes, nil
 }
 
-func (service *NoteServiceImpl) Create(ctx context.Context, request *dto.NoteRequest) (*models.Note, error) {
+func (service *NoteServiceImpl) Create(ctx context.Context, request *dto.NoteRequest) (*dto.NoteResponse, error) {
 	err := service.Validation.Struct(request)
 	if err != nil {
 		return nil, &exception.BadRequest{Message: err.Error()}
@@ -81,7 +81,7 @@ func (service *NoteServiceImpl) Create(ctx context.Context, request *dto.NoteReq
 	var noteEntity *models.Note
 
 	err = service.DbImpl.RunWithTransaction(ctx, &sql.TxOptions{ReadOnly: false}, func(tx *sql.Tx) error {
-		result, err := service.NoteRepo.Create(ctx, tx, models.Note{Title: request.Title, Slug: slug, Body: request.Body, CreatedAt: time.Now(), UpdatedAt: time.Now()})
+		result, err := service.NoteRepo.Create(ctx, tx, *dto.ToNoteModel(request, slug))
 		if err != nil {
 			return err
 		}
@@ -94,7 +94,21 @@ func (service *NoteServiceImpl) Create(ctx context.Context, request *dto.NoteReq
 		return nil, &exception.InternalServer{Message: err.Error()}
 	}
 
-	return noteEntity, nil
+	return dto.ToNoteResponse(noteEntity), nil
+}
+
+func (service *NoteServiceImpl) FindBySlug(ctx context.Context, slug string) (*dto.NoteResponse, error) {
+	note, err := service.NoteRepo.FindBySlug(ctx, service.DbImpl.DB, slug)
+
+	if err != nil {
+		return nil, &exception.InternalServer{Message: err.Error()}
+	}
+
+	if note == nil {
+		return nil, &exception.NotFound{Message: "Note Not Found"}
+	}
+
+	return dto.ToNoteResponse(note), nil
 }
 
 func (service *NoteServiceImpl) Archived(ctx context.Context, slug string) (bool, error) {

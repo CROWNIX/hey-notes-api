@@ -31,8 +31,9 @@ func (handler *RouteImpl) Route(route *gin.Engine) {
 	notes.Use(middleware.JWTMiddleware())
 	
 	notes.GET("/", handler.Index)
-	notes.GET("/archived", handler.GetArchived)
 	notes.POST("/", handler.Create)
+	notes.GET("/archived", handler.GetArchived)
+	notes.GET("/:slug", handler.Show)
 	notes.POST("/:slug/archive", handler.Archived)
 	notes.POST("/:slug/unarchive", handler.Unarchived)
 	notes.DELETE("/:slug", handler.Delete)
