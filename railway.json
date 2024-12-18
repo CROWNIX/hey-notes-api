@@ -5,6 +5,7 @@
         "buildCommand": "go build -o main ./cmd/app"
     },
     "deploy": {
+        "startCommand": "./app",
         "runtime": "V2",
         "numReplicas": 1,
         "sleepApplication": false,
