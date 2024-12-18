@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -41,8 +42,18 @@ func (dbIMPL *DbImpl) RunWithTransaction(ctx context.Context, opts *sql.TxOption
 }
 
 func NewDB() *sql.DB {
-	db, err := sql.Open("mysql", "root@tcp(localhost:3306)/hey_notes_api?parseTime=true")
 	
+const(
+   host 	= "q4jei.h.filess.io"
+   port     = "3306"
+   user     = "db2025_satisfied"
+   password = "6ae5f03b9845cf7eaaabfb35ccc63c9e934ce940"
+   dbname   = "db2025_satisfied"
+)
+
+	uri := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user, password, host, port, dbname)
+	db, err := sql.Open("mysql", uri)
+
 	if err != nil {
 		panic(err)
 	}

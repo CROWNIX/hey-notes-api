@@ -88,9 +88,9 @@ func (service *AuthServiceImpl) Login(ctx context.Context, request *dto.LoginReq
 		return nil, &exception.NotFound{Message: "wrong email or password"}
 	}
 
-	// if err := helpers.VerifyPassword(user.Password, request.Password); err != nil {
-	// 	return nil, &exception.NotFound{Message: err.Error()}
-	// }
+	if err := helpers.VerifyPassword(user.Password, request.Password); err != nil {
+		return nil, &exception.NotFound{Message: err.Error()}
+	}
 
 	token, err := helpers.GenerateToken(user)
 	if err != nil {

@@ -6,8 +6,8 @@ import (
 
 type Group struct {
     Id int 
-    Title string 
     UserId int 
+    Title string 
     IsPublic bool 
     Pin string
     CreatedAt time.Time

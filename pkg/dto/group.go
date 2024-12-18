@@ -6,9 +6,9 @@ import (
 )
 
 type GroupRequest struct {
-	UserId   string `json:"user_id" validate:"required"`
+	UserId   int `json:"user_id" validate:"required"`
 	Title    string `json:"title" validate:"required,max=64"`
-	IsPublic string `json:"is_public" validate:"required"`
+	IsPublic bool `json:"is_public" validate:"required"`
 	Pin      string `json:"pin" validate:"required"`
 }
 
@@ -22,7 +22,16 @@ type GroupResponse struct {
 	UpdatedAt time.Time
 }
 
-func ToGroupResponse(group models.Group) *GroupResponse {
+func ToGroupModel(request *GroupRequest) *models.Group {
+	return &models.Group{
+		UserId: request.UserId,
+		Title: request.Title,
+		IsPublic: request.IsPublic,
+		Pin: request.Pin,
+	}
+}
+
+func ToGroupResponse(group *models.Group) *GroupResponse {
 	return &GroupResponse{
 		Id: group.Id,
 		Title: group.Title,

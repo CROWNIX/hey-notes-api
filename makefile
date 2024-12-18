@@ -2,7 +2,8 @@
 .DEFAULT_GOAL := help
 
 # Variabel untuk parameter koneksi database
-DB_URL := "mysql://root@tcp(localhost:3306)/hey_notes_api"
+DB_URL := "mysql://db2025_satisfied:6ae5f03b9845cf7eaaabfb35ccc63c9e934ce940@tcp(q4jei.h.filess.io:3306)/db2025_satisfied"
+
 
 # Variabel untuk direktori migrations
 MIGRATIONS_DIR := database/migrations/
